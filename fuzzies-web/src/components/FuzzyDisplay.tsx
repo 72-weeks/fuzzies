@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFuzzyStore } from '../store';
+import { useFuzzyStore, assetUrl } from '../store';
 
 const DISPLAY_SIZE = 640;
 
@@ -38,7 +38,7 @@ export const FuzzyDisplay: React.FC = () => {
       >
         {/* Layer 1: Body */}
         <img
-          src={`/assets/body-${color}.png`}
+          src={assetUrl(`body-${color}.png`)}
           alt="Fuzzy body"
           style={{
             position: 'absolute',
@@ -48,13 +48,13 @@ export const FuzzyDisplay: React.FC = () => {
             objectFit: 'contain',
           }}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/assets/body-blue.png';
+            (e.target as HTMLImageElement).src = assetUrl('body-blue.png');
           }}
         />
 
         {/* Layer 2: Tummy icon (generated image overlay) */}
         <img
-          src={`/assets/tummy-${species}.png`}
+          src={assetUrl(`tummy-${species}.png`)}
           alt={`${species} tummy icon`}
           style={{
             position: 'absolute',
@@ -74,7 +74,7 @@ export const FuzzyDisplay: React.FC = () => {
         {/* Layer 3: Hat accessory (generated image overlay) */}
         {hat !== 'none' && (
           <img
-            src={`/assets/hat-${hat}.png`}
+            src={assetUrl(`hat-${hat}.png`)}
             alt={`${hat} hat`}
             style={{
               position: 'absolute',

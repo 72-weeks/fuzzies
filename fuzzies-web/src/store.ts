@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 
+const BASE = import.meta.env.BASE_URL;
+export const assetUrl = (path: string) => `${BASE}assets/${path}`;
+
 export type Color = 'blue' | 'pink' | 'green' | 'yellow' | 'purple' | 'orange';
 export type Species = 'ice' | 'heart' | 'hypno' | 'icecream' | 'tv' | 'paint';
 export type Hat = 'none' | 'cap' | 'magic' | 'helicopter';

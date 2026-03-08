@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFuzzyStore } from '../store';
+import { useFuzzyStore, assetUrl } from '../store';
 import type { Color, Species, Hat } from '../store';
 import { TummyIcon } from './TummyIcons';
 
@@ -213,7 +213,7 @@ export const NavBubbles: React.FC = () => {
                     <span style={{ fontSize: '1.3rem' }}>{h.emoji}</span>
                   ) : (
                     <img
-                      src={`/assets/hat-${h.id}.png`}
+                      src={assetUrl(`hat-${h.id}.png`)}
                       alt={h.id}
                       style={{ width: 30, height: 30, objectFit: 'contain' }}
                       onError={(e) => {
@@ -244,7 +244,7 @@ export const NavBubbles: React.FC = () => {
               <span style={{ fontSize: '1.5rem' }}>✨</span>
             ) : (
               <img
-                src={`/assets/hat-${hat}.png`}
+                src={assetUrl(`hat-${hat}.png`)}
                 alt={hat}
                 style={{ width: 34, height: 34, objectFit: 'contain' }}
                 onError={(e) => {
