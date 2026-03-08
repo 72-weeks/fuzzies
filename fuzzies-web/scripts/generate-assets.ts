@@ -1,6 +1,7 @@
 import { fal } from '@fal-ai/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import sharp from 'sharp';
 
 // Load .env manually (no dotenv dependency needed)
 const envPath = path.join(import.meta.dirname, '..', '.env');
@@ -38,12 +39,12 @@ const TUMMY_VARIANTS = [
 
 const HAT_VARIANTS = [
   { id: 'cap',        prompt: 'A cute baseball cap, simple flat illustration style, blue and white, front-facing angle, bottom opening not visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
-  { id: 'magic',      prompt: 'A cute tall pointed wizard hat with stars and moon, simple flat illustration style, purple and gold, front-facing angle, bottom opening not visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
+  { id: 'magic',      prompt: 'A cute tall pointed wizard hat with stars and moon decorations, simple flat illustration style, purple and gold, viewed from the front at a slight angle so the bottom rim is barely visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
   { id: 'helicopter', prompt: 'A cute propeller beanie helicopter hat, simple flat illustration style, colorful stripes, front-facing angle, bottom opening not visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
 ];
 
 const WINGS_VARIANTS = [
-  { id: 'dragon', prompt: 'A pair of cute cartoon dragon wings spread wide, symmetrical, simple flat illustration style, dark red and orange membrane, centered on white background, children\'s storybook art, no text, no character, no body, just the wings' },
+  { id: 'dragon', prompt: 'A pair of cute small cartoon dragon wings, rounded and friendly, simple flat children\'s illustration style, soft orange and yellow colors, centered on white background, no text, no character, no body, just the wings' },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -112,11 +113,25 @@ async function removeBackground(imageUrl: string): Promise<string> {
   return url;
 }
 
+/** Auto-crop transparent pixels around the image */
+async function cropTransparent(imageUrl: string): Promise<Buffer> {
+  const res = await fetch(imageUrl);
+  if (!res.ok) throw new Error(`Download failed: ${res.status} ${imageUrl}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  console.log('  Cropping transparent pixels...');
+  return sharp(buf).trim().toBuffer();
+}
+
 async function downloadImage(url: string, dest: string): Promise<void> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Download failed: ${res.status} ${url}`);
   const buf = await res.arrayBuffer();
   fs.writeFileSync(dest, Buffer.from(buf));
+  console.log(`  Saved → ${path.relative(process.cwd(), dest)}`);
+}
+
+async function saveBuffer(buf: Buffer, dest: string): Promise<void> {
+  fs.writeFileSync(dest, buf);
   console.log(`  Saved → ${path.relative(process.cwd(), dest)}`);
 }
 
@@ -139,11 +154,13 @@ const CLEAN_BODY_ONLY = process.argv.includes('--clean-body');
 const TUMMIES_ONLY = process.argv.includes('--tummies');
 const HATS_ONLY = process.argv.includes('--hats');
 const WINGS_ONLY = process.argv.includes('--wings');
+const SINGLE_ARG = process.argv.find(a => a.startsWith('--single='));
+const SINGLE_ID = SINGLE_ARG?.split('=')[1] ?? null;
 
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  const runAll = !CLEAN_BODY_ONLY && !TUMMIES_ONLY && !HATS_ONLY && !WINGS_ONLY;
+  const runAll = !CLEAN_BODY_ONLY && !TUMMIES_ONLY && !HATS_ONLY && !WINGS_ONLY && !SINGLE_ID;
 
   // ── Bodies (edit base image) ──────────────────────────────────────────────
   if (runAll || CLEAN_BODY_ONLY) {
@@ -160,7 +177,8 @@ async function main() {
       try {
         const genUrl = await generateVariant(baseUrl, v.prompt);
         const cleanUrl = await removeBackground(genUrl);
-        await downloadImage(cleanUrl, path.join(OUT_DIR, `body-${v.id}.png`));
+        const cropped = await cropTransparent(cleanUrl);
+        await saveBuffer(cropped, path.join(OUT_DIR, `body-${v.id}.png`));
       } catch (err) {
         console.error(`  FAILED body-${v.id}:`, err);
       }
@@ -177,7 +195,8 @@ async function main() {
       try {
         const genUrl = await generateImage(t.prompt);
         const cleanUrl = await removeBackground(genUrl);
-        await downloadImage(cleanUrl, path.join(OUT_DIR, `tummy-${t.id}.png`));
+        const cropped = await cropTransparent(cleanUrl);
+        await saveBuffer(cropped, path.join(OUT_DIR, `tummy-${t.id}.png`));
       } catch (err) {
         console.error(`  FAILED tummy-${t.id}:`, err);
       }
@@ -185,8 +204,12 @@ async function main() {
   }
 
   // ── Hat accessories (text-to-image) ──────────────────────────────────────
-  if (runAll || HATS_ONLY) {
-    const hats = SAMPLE_MODE ? HAT_VARIANTS.slice(0, 1) : HAT_VARIANTS;
+  if (runAll || HATS_ONLY || (SINGLE_ID && HAT_VARIANTS.some(h => h.id === SINGLE_ID))) {
+    const hats = SINGLE_ID
+      ? HAT_VARIANTS.filter(h => h.id === SINGLE_ID)
+      : SAMPLE_MODE
+        ? HAT_VARIANTS.slice(0, 1)
+        : HAT_VARIANTS;
 
     console.log(`\n--- Generating ${hats.length} hat accessory(ies) ---\n`);
     for (const h of hats) {
@@ -194,7 +217,8 @@ async function main() {
       try {
         const genUrl = await generateImage(h.prompt);
         const cleanUrl = await removeBackground(genUrl);
-        await downloadImage(cleanUrl, path.join(OUT_DIR, `hat-${h.id}.png`));
+        const cropped = await cropTransparent(cleanUrl);
+        await saveBuffer(cropped, path.join(OUT_DIR, `hat-${h.id}.png`));
       } catch (err) {
         console.error(`  FAILED hat-${h.id}:`, err);
       }
@@ -209,7 +233,8 @@ async function main() {
       try {
         const genUrl = await generateImage(w.prompt);
         const cleanUrl = await removeBackground(genUrl);
-        await downloadImage(cleanUrl, path.join(OUT_DIR, `wings-${w.id}.png`));
+        const cropped = await cropTransparent(cleanUrl);
+        await saveBuffer(cropped, path.join(OUT_DIR, `wings-${w.id}.png`));
       } catch (err) {
         console.error(`  FAILED wings-${w.id}:`, err);
       }

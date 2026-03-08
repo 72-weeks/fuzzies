@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFuzzyStore, useActiveFuzzy, assetUrl } from '../store';
 import type { Color, Species, Hat } from '../store';
 
@@ -42,17 +42,17 @@ const CloseX: React.FC = () => (
 );
 
 export const NavBubbles: React.FC = () => {
-  const { setColor, setSpecies, setHat } = useFuzzyStore();
+  const { setColor, setSpecies, setHat, setHatDetached, setHatOffset, setDetachedHatType, menuOpen, setMenuOpen, closeMenu } = useFuzzyStore();
   const active = useActiveFuzzy();
   const color = active?.color ?? 'blue';
   const species = active?.species ?? 'ice';
   const hat = active?.hat ?? 'none';
-  const [openMenu, setOpenMenu] = useState<Category | null>(null);
+  const openMenu = (menuOpen as Category) ?? null;
 
   const currentHex = COLORS.find(c => c.id === color)?.hex ?? '#8ab4e8';
 
-  const open = (cat: Category) => setOpenMenu(cat);
-  const close = () => setOpenMenu(null);
+  const open = (cat: Category) => setMenuOpen(cat);
+  const close = () => closeMenu();
 
   const previewStyle = (active: boolean): React.CSSProperties => ({
     width: BUBBLE,
@@ -233,7 +233,12 @@ export const NavBubbles: React.FC = () => {
               {HATS.map((h, i) => (
                 <button
                   key={h.id}
-                  onClick={() => setHat(h.id)}
+                  onClick={() => {
+                    setHat(h.id);
+                    setHatDetached(false);
+                    setHatOffset({ x: 0, y: 0 });
+                    setDetachedHatType('none');
+                  }}
                   style={{
                     ...optionStyle(hat === h.id, i),
                     ...glassOption(hat === h.id),

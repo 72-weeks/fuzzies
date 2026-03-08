@@ -14,12 +14,11 @@ const SNAP_DISTANCE = 120;
 
 export const FuzzyDisplay: React.FC = () => {
   const active = useActiveFuzzy();
-  const { setPosition, setHat, setHatDetached, setHatOffset, setDetachedHatType } = useFuzzyStore();
+  const { setPosition, setHat, setHatDetached, setHatOffset, setDetachedHatType, closeMenu } = useFuzzyStore();
 
   const color = active?.color ?? 'blue';
   const species = active?.species ?? 'ice';
   const hat = active?.hat ?? 'none';
-  const name = active?.name ?? '';
   const hatDetached = active?.hatDetached ?? false;
   const hatOffset = active?.hatOffset ?? { x: 0, y: 0 };
   const detachedHatType = active?.detachedHatType ?? 'none';
@@ -40,13 +39,14 @@ export const FuzzyDisplay: React.FC = () => {
   const onFuzzyDown = useCallback((e: React.PointerEvent) => {
     // Don't capture if the hat handles it
     if ((e.target as HTMLElement).closest('[data-hat-drag]')) return;
+    closeMenu();
     fuzzyRef.current?.setPointerCapture(e.pointerId);
     fuzzyStartRef.current = {
       px: e.clientX, py: e.clientY,
       sx: fuzzyPosRef.current.x, sy: fuzzyPosRef.current.y,
     };
     setFuzzyDragging(true);
-  }, []);
+  }, [closeMenu]);
 
   const onFuzzyMove = useCallback((e: React.PointerEvent) => {
     if (!fuzzyDragging) return;
@@ -67,21 +67,26 @@ export const FuzzyDisplay: React.FC = () => {
   }, [setPosition]);
 
   // ── Hat drag ──
-  const hatRef = useRef<HTMLDivElement>(null);
+  const attachedHatRef = useRef<HTMLDivElement>(null);
+  const detachedHatRef = useRef<HTMLDivElement>(null);
   const [hatDragging, setHatDragging] = useState(false);
   const hatPosRef = useRef({ x: 0, y: 0 });
   const hatStartRef = useRef({ px: 0, py: 0, sx: 0, sy: 0 });
+  const activeHatRef = useRef<HTMLDivElement | null>(null);
 
   const onHatDown = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
-    hatRef.current?.setPointerCapture(e.pointerId);
+    closeMenu();
+    const ref = hatDetached ? detachedHatRef : attachedHatRef;
+    activeHatRef.current = ref.current;
+    activeHatRef.current?.setPointerCapture(e.pointerId);
     hatPosRef.current = hatDetached ? { ...hatOffset } : { x: 0, y: 0 };
     hatStartRef.current = {
       px: e.clientX, py: e.clientY,
       sx: hatPosRef.current.x, sy: hatPosRef.current.y,
     };
     setHatDragging(true);
-  }, [hatDetached, hatOffset]);
+  }, [hatDetached, hatOffset, closeMenu]);
 
   const onHatMove = useCallback((e: React.PointerEvent) => {
     if (!hatDragging) return;
@@ -91,8 +96,8 @@ export const FuzzyDisplay: React.FC = () => {
       x: hatStartRef.current.sx + dx,
       y: hatStartRef.current.sy + dy,
     };
-    if (hatRef.current) {
-      hatRef.current.style.transform = `translate(${hatPosRef.current.x}px, ${hatPosRef.current.y}px)`;
+    if (activeHatRef.current) {
+      activeHatRef.current.style.transform = `translate(${hatPosRef.current.x}px, ${hatPosRef.current.y}px)`;
     }
   }, [hatDragging]);
 
@@ -106,7 +111,7 @@ export const FuzzyDisplay: React.FC = () => {
         setHatDetached(false);
         setHatOffset({ x: 0, y: 0 });
       }
-      if (hatRef.current) hatRef.current.style.transform = '';
+      if (activeHatRef.current) activeHatRef.current.style.transform = '';
     } else {
       // Detach
       const currentHat = hatDetached ? detachedHatType : hat;
@@ -117,12 +122,13 @@ export const FuzzyDisplay: React.FC = () => {
         if (!hatDetached) setHat('none');
       }
     }
+    activeHatRef.current = null;
   }, [hat, hatDetached, detachedHatType, setHat, setHatDetached, setHatOffset, setDetachedHatType]);
 
   // Reset hat visual when reattached
   useEffect(() => {
-    if (!hatDetached && hatRef.current) {
-      hatRef.current.style.transform = '';
+    if (!hatDetached && attachedHatRef.current) {
+      attachedHatRef.current.style.transform = '';
     }
   }, [hatDetached]);
 
@@ -146,20 +152,6 @@ export const FuzzyDisplay: React.FC = () => {
         transform: `translate(${active?.position?.x ?? 0}px, ${active?.position?.y ?? 0}px)`,
       }}
     >
-      {name && (
-        <div style={{
-          fontFamily: '"Fredoka One", "Nunito", system-ui, sans-serif',
-          fontSize: '2rem',
-          fontWeight: 700,
-          color: 'white',
-          textShadow: '0 2px 8px rgba(0,0,0,0.25)',
-          letterSpacing: '0.05em',
-          pointerEvents: 'none',
-        }}>
-          {name}
-        </div>
-      )}
-
       <div
         className={fuzzyDragging ? '' : 'fuzzy-bob'}
         style={{
@@ -176,10 +168,10 @@ export const FuzzyDisplay: React.FC = () => {
             alt="Dragon wings"
             style={{
               position: 'absolute',
-              top: '15%',
+              top: '20%',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '110%',
+              width: '75%',
               height: 'auto',
               objectFit: 'contain',
               zIndex: 0,
@@ -227,7 +219,7 @@ export const FuzzyDisplay: React.FC = () => {
         {/* Layer 3: Hat (attached — draggable) */}
         {hat !== 'none' && !hatDetached && hatPos && (
           <div
-            ref={hatRef}
+            ref={attachedHatRef}
             data-hat-drag
             onPointerDown={onHatDown}
             onPointerMove={onHatMove}
@@ -255,7 +247,7 @@ export const FuzzyDisplay: React.FC = () => {
         {/* Layer 3: Hat (detached — floating, draggable) */}
         {hatDetached && detachedHatType !== 'none' && hatPos && (
           <div
-            ref={hatRef}
+            ref={detachedHatRef}
             data-hat-drag
             onPointerDown={onHatDown}
             onPointerMove={onHatMove}

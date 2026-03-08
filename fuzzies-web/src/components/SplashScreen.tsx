@@ -38,8 +38,8 @@ export const SplashScreen: React.FC = () => {
             width: 100,
             height: 100,
             borderRadius: '50%',
-            border: '4px solid rgba(255,255,255,0.6)',
-            background: 'rgba(255,255,255,0.2)',
+            border: '4px solid rgba(255,255,255,0.8)',
+            background: 'rgba(255,255,255,0.35)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             fontSize: '3rem',
@@ -48,13 +48,14 @@ export const SplashScreen: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            boxShadow: '0 0 20px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.2)',
           }}
           aria-label="Create your first Fuzzy"
         >
           +
         </button>
       ) : (
-        <div style={{
+        <div className="hide-scrollbar" style={{
           width: '100%',
           maxWidth: '100vw',
           overflowX: 'auto',
@@ -117,8 +118,8 @@ export const SplashScreen: React.FC = () => {
               width: 80,
               height: 80,
               borderRadius: '50%',
-              border: '3px solid rgba(255,255,255,0.5)',
-              background: 'rgba(255,255,255,0.15)',
+              border: '3px solid rgba(255,255,255,0.8)',
+              background: 'rgba(255,255,255,0.35)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
               fontSize: '2.5rem',
@@ -127,6 +128,7 @@ export const SplashScreen: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: '0 0 20px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.2)',
             }}
             aria-label="Create new Fuzzy"
           >

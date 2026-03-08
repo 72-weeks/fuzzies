@@ -40,6 +40,7 @@ interface FuzzyFamilyStore {
   fuzzies: FuzzyConfig[];
   activeFuzzyId: string | null;
   screen: 'splash' | 'editor';
+  menuOpen: string | null;
   createFuzzy: () => void;
   deleteFuzzy: (id: string) => void;
   setActiveFuzzy: (id: string) => void;
@@ -52,6 +53,8 @@ interface FuzzyFamilyStore {
   setHatDetached: (detached: boolean) => void;
   setHatOffset: (offset: { x: number; y: number }) => void;
   setDetachedHatType: (hat: Hat) => void;
+  setMenuOpen: (menu: string | null) => void;
+  closeMenu: () => void;
 }
 
 function updateActive(state: FuzzyFamilyStore, patch: Partial<FuzzyConfig>): Partial<FuzzyFamilyStore> {
@@ -68,6 +71,7 @@ export const useFuzzyStore = create<FuzzyFamilyStore>()(
       fuzzies: [],
       activeFuzzyId: null,
       screen: 'splash',
+      menuOpen: null,
 
       createFuzzy: () =>
         set((state) => {
@@ -96,8 +100,17 @@ export const useFuzzyStore = create<FuzzyFamilyStore>()(
       setHatDetached: (hatDetached) => set((s) => updateActive(s, { hatDetached })),
       setHatOffset: (hatOffset) => set((s) => updateActive(s, { hatOffset })),
       setDetachedHatType: (detachedHatType) => set((s) => updateActive(s, { detachedHatType })),
+      setMenuOpen: (menuOpen) => set({ menuOpen }),
+      closeMenu: () => set({ menuOpen: null }),
     }),
-    { name: 'fuzzy-family' }
+    {
+      name: 'fuzzy-family',
+      partialize: (state) => {
+        // Don't persist menuOpen — it's transient UI state
+        const { menuOpen: _, ...rest } = state;
+        return rest;
+      },
+    }
   )
 );
 

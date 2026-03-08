@@ -53,3 +53,7 @@ input::placeholder {
 .bounce-btn {
   animation: bounce 1.5s ease-in-out infinite;
 }
+
+/* Hide scrollbar */
+.hide-scrollbar { scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }

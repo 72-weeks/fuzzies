@@ -35,10 +35,10 @@ export const MiniatureFuzzy: React.FC<Props> = ({ fuzzy, size = 200, onClick }) 
           alt=""
           style={{
             position: 'absolute',
-            top: '15%',
+            top: '20%',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '110%',
+            width: '75%',
             height: 'auto',
             objectFit: 'contain',
             zIndex: 0,
