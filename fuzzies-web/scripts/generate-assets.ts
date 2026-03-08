@@ -23,21 +23,27 @@ const BODY_VARIANTS = [
   { id: 'yellow', prompt: 'Remove the snowflake icon from the Fuzzy\'s belly. Leave the belly patch as a plain light-colored oval. Change the fur color to sunny yellow. Keep everything else identical — eye, antennas, mouth, arms, legs.' },
   { id: 'purple', prompt: 'Remove the snowflake icon from the Fuzzy\'s belly. Leave the belly patch as a plain light-colored oval. Change the fur color to lavender purple. Keep everything else identical — eye, antennas, mouth, arms, legs.' },
   { id: 'orange', prompt: 'Remove the snowflake icon from the Fuzzy\'s belly. Leave the belly patch as a plain light-colored oval. Change the fur color to warm orange. Keep everything else identical — eye, antennas, mouth, arms, legs.' },
+  { id: 'red',    prompt: 'Remove the snowflake icon from the Fuzzy\'s belly. Leave the belly patch as a plain light-colored oval. Change the fur color to cherry red. Keep everything else identical — eye, antennas, mouth, arms, legs.' },
 ];
 
 const TUMMY_VARIANTS = [
   { id: 'ice',      prompt: 'A cute snowflake icon, simple flat illustration style, pastel blue, centered on white background, children\'s storybook art, no text, no character' },
   { id: 'heart',    prompt: 'A cute heart icon, simple flat illustration style, pink and red, centered on white background, children\'s storybook art, no text, no character' },
-  { id: 'hypno',    prompt: 'A cute spiral hypno swirl icon, simple flat illustration style, purple, centered on white background, children\'s storybook art, no text, no character' },
-  { id: 'icecream', prompt: 'A cute ice cream cone icon with scoops, simple flat illustration style, pastel pink colors, centered on white background, children\'s storybook art, no text, no character' },
+  { id: 'hypno',    prompt: 'A cute spiral hypno swirl icon, simple flat illustration style, alternating purple and green spiral colors, centered on white background, children\'s storybook art, no text, no character' },
+  { id: 'icecream', prompt: 'A cute ice cream cone icon with scoops, simple flat illustration style, pastel pink colors, centered on white background, children\'s storybook art, no text, no character, no shadow, no ground shadow, no circle behind it, clean edges' },
   { id: 'tv',       prompt: 'A cute retro television icon with antenna, simple flat illustration style, gray and blue, centered on white background, children\'s storybook art, no text, no character' },
-  { id: 'paint',    prompt: 'A cute artist paint palette icon with colorful dots, simple flat illustration style, centered on white background, children\'s storybook art, no text, no character' },
+  { id: 'rainbow',  prompt: 'A cute rainbow arc icon, simple flat illustration style, colorful rainbow stripes, centered on white background, children\'s storybook art, no text, no character' },
+  { id: 'dragon',   prompt: 'A cute fire flame icon, simple flat illustration style, orange and yellow, centered on white background, children\'s storybook art, no text, no character' },
 ];
 
 const HAT_VARIANTS = [
-  { id: 'cap',        prompt: 'A cute baseball cap, simple flat illustration style, blue and white, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
-  { id: 'magic',      prompt: 'A cute tall pointed wizard hat with stars and moon, simple flat illustration style, purple and gold, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
-  { id: 'helicopter', prompt: 'A cute propeller beanie helicopter hat, simple flat illustration style, colorful stripes, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
+  { id: 'cap',        prompt: 'A cute baseball cap, simple flat illustration style, blue and white, front-facing angle, bottom opening not visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
+  { id: 'magic',      prompt: 'A cute tall pointed wizard hat with stars and moon, simple flat illustration style, purple and gold, front-facing angle, bottom opening not visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
+  { id: 'helicopter', prompt: 'A cute propeller beanie helicopter hat, simple flat illustration style, colorful stripes, front-facing angle, bottom opening not visible, centered on white background, children\'s storybook art, isolated accessory only, no character, no text' },
+];
+
+const WINGS_VARIANTS = [
+  { id: 'dragon', prompt: 'A pair of cute cartoon dragon wings spread wide, symmetrical, simple flat illustration style, dark red and orange membrane, centered on white background, children\'s storybook art, no text, no character, no body, just the wings' },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -132,11 +138,12 @@ const SAMPLE_MODE = process.argv.includes('--sample');
 const CLEAN_BODY_ONLY = process.argv.includes('--clean-body');
 const TUMMIES_ONLY = process.argv.includes('--tummies');
 const HATS_ONLY = process.argv.includes('--hats');
+const WINGS_ONLY = process.argv.includes('--wings');
 
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  const runAll = !CLEAN_BODY_ONLY && !TUMMIES_ONLY && !HATS_ONLY;
+  const runAll = !CLEAN_BODY_ONLY && !TUMMIES_ONLY && !HATS_ONLY && !WINGS_ONLY;
 
   // ── Bodies (edit base image) ──────────────────────────────────────────────
   if (runAll || CLEAN_BODY_ONLY) {
@@ -190,6 +197,21 @@ async function main() {
         await downloadImage(cleanUrl, path.join(OUT_DIR, `hat-${h.id}.png`));
       } catch (err) {
         console.error(`  FAILED hat-${h.id}:`, err);
+      }
+    }
+  }
+
+  // ── Wings (text-to-image) ───────────────────────────────────────────────
+  if (runAll || WINGS_ONLY) {
+    console.log(`\n--- Generating ${WINGS_VARIANTS.length} wings variant(s) ---\n`);
+    for (const w of WINGS_VARIANTS) {
+      console.log(`Generating wings-${w.id}...`);
+      try {
+        const genUrl = await generateImage(w.prompt);
+        const cleanUrl = await removeBackground(genUrl);
+        await downloadImage(cleanUrl, path.join(OUT_DIR, `wings-${w.id}.png`));
+      } catch (err) {
+        console.error(`  FAILED wings-${w.id}:`, err);
       }
     }
   }

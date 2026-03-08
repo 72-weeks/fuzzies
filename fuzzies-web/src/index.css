@@ -43,3 +43,13 @@ input::placeholder {
     transform: scale(1) translateY(0);
   }
 }
+
+/* Bounce animation for empty-state "+" button */
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+.bounce-btn {
+  animation: bounce 1.5s ease-in-out infinite;
+}

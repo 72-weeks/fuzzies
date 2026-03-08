@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFuzzyStore } from '../../store';
+import { useFuzzyStore, useActiveFuzzy } from '../../store';
 import type { Species } from '../../store';
 import { TummyIcon } from '../TummyIcons';
 
@@ -9,11 +9,14 @@ const SPECIES: { id: Species; label: string }[] = [
   { id: 'hypno',   label: 'Hypno' },
   { id: 'icecream',label: 'Cream' },
   { id: 'tv',      label: 'TV' },
-  { id: 'paint',   label: 'Paint' },
+  { id: 'rainbow', label: 'Rainbow' },
+  { id: 'dragon',  label: 'Dragon' },
 ];
 
 export const SpeciesTab: React.FC = () => {
-  const { species, setSpecies } = useFuzzyStore();
+  const { setSpecies } = useFuzzyStore();
+  const active = useActiveFuzzy();
+  const species = active?.species ?? 'ice';
 
   return (
     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', padding: '4px 0' }}>

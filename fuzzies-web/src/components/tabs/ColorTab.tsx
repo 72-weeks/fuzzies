@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFuzzyStore } from '../../store';
+import { useFuzzyStore, useActiveFuzzy } from '../../store';
 import type { Color } from '../../store';
 
 const COLORS: { id: Color; hex: string; label: string }[] = [
@@ -9,10 +9,13 @@ const COLORS: { id: Color; hex: string; label: string }[] = [
   { id: 'yellow', hex: '#f5d56e', label: 'Yellow' },
   { id: 'purple', hex: '#c3a0e8', label: 'Purple' },
   { id: 'orange', hex: '#f5a96e', label: 'Orange' },
+  { id: 'red',    hex: '#e87474', label: 'Red' },
 ];
 
 export const ColorTab: React.FC = () => {
-  const { color, setColor } = useFuzzyStore();
+  const { setColor } = useFuzzyStore();
+  const active = useActiveFuzzy();
+  const color = active?.color ?? 'blue';
 
   return (
     <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', padding: '8px 0' }}>

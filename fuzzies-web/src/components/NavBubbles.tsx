@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFuzzyStore, assetUrl } from '../store';
+import { useFuzzyStore, useActiveFuzzy, assetUrl } from '../store';
 import type { Color, Species, Hat } from '../store';
 
 type Category = 'color' | 'species' | 'hat';
@@ -11,12 +11,20 @@ const COLORS: { id: Color; hex: string }[] = [
   { id: 'yellow', hex: '#f5d56e' },
   { id: 'purple', hex: '#c3a0e8' },
   { id: 'orange', hex: '#f5a96e' },
+  { id: 'red',    hex: '#e87474' },
 ];
 
-const SPECIES_LIST: Species[] = ['ice', 'heart', 'hypno', 'icecream', 'tv', 'paint'];
+const SPECIES_LIST: Species[] = ['ice', 'heart', 'hypno', 'icecream', 'tv', 'rainbow', 'dragon'];
+
+const NoHatIcon: React.FC<{ size?: number }> = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke="#e74c3c" strokeWidth="2.5" fill="none" />
+    <line x1="5" y1="5" x2="19" y2="19" stroke="#e74c3c" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
 
 const HATS: { id: Hat; emoji: string }[] = [
-  { id: 'none',       emoji: '✨' },
+  { id: 'none',       emoji: '' },
   { id: 'cap',        emoji: '🧢' },
   { id: 'magic',      emoji: '🎩' },
   { id: 'helicopter', emoji: '🚁' },
@@ -34,7 +42,11 @@ const CloseX: React.FC = () => (
 );
 
 export const NavBubbles: React.FC = () => {
-  const { color, species, hat, setColor, setSpecies, setHat } = useFuzzyStore();
+  const { setColor, setSpecies, setHat } = useFuzzyStore();
+  const active = useActiveFuzzy();
+  const color = active?.color ?? 'blue';
+  const species = active?.species ?? 'ice';
+  const hat = active?.hat ?? 'none';
   const [openMenu, setOpenMenu] = useState<Category | null>(null);
 
   const currentHex = COLORS.find(c => c.id === color)?.hex ?? '#8ab4e8';
@@ -229,7 +241,7 @@ export const NavBubbles: React.FC = () => {
                   aria-label={h.id}
                 >
                   {h.id === 'none' ? (
-                    <span style={{ fontSize: '1.3rem' }}>{h.emoji}</span>
+                    <NoHatIcon size={24} />
                   ) : (
                     <img
                       src={assetUrl(`hat-${h.id}.png`)}
@@ -257,7 +269,7 @@ export const NavBubbles: React.FC = () => {
               aria-label="Hat"
             >
               {hat === 'none' ? (
-                <span style={{ fontSize: '1.5rem' }}>✨</span>
+                <NoHatIcon size={28} />
               ) : (
                 <img
                   src={assetUrl(`hat-${hat}.png`)}

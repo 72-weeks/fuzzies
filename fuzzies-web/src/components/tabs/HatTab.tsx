@@ -1,16 +1,25 @@
 import React from 'react';
-import { useFuzzyStore } from '../../store';
+import { useFuzzyStore, useActiveFuzzy } from '../../store';
 import type { Hat } from '../../store';
 
+const NoHatIcon: React.FC<{ size?: number }> = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke="#e74c3c" strokeWidth="2.5" fill="none" />
+    <line x1="5" y1="5" x2="19" y2="19" stroke="#e74c3c" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
+
 const HATS: { id: Hat; label: string; emoji: string }[] = [
-  { id: 'none',       label: 'None',       emoji: '✨' },
+  { id: 'none',       label: 'None',       emoji: '' },
   { id: 'cap',        label: 'Cap',        emoji: '🧢' },
   { id: 'magic',      label: 'Magic',      emoji: '🎩' },
   { id: 'helicopter', label: 'Copter',     emoji: '🚁' },
 ];
 
 export const HatTab: React.FC = () => {
-  const { hat, setHat } = useFuzzyStore();
+  const { setHat } = useFuzzyStore();
+  const active = useActiveFuzzy();
+  const hat = active?.hat ?? 'none';
 
   return (
     <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', padding: '4px 0' }}>
@@ -54,7 +63,7 @@ export const HatTab: React.FC = () => {
               />
             </div>
           ) : (
-            <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>{h.emoji}</span>
+            <NoHatIcon size={36} />
           )}
           <span style={{
             fontSize: '0.7rem',

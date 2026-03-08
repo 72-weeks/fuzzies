@@ -1,8 +1,10 @@
 import React from 'react';
-import { useFuzzyStore } from '../../store';
+import { useFuzzyStore, useActiveFuzzy } from '../../store';
 
 export const NameTab: React.FC = () => {
-  const { name, setName } = useFuzzyStore();
+  const { setName } = useFuzzyStore();
+  const active = useActiveFuzzy();
+  const name = active?.name ?? '';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '8px 0' }}>

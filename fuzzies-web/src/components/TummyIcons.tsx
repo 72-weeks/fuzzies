@@ -66,18 +66,25 @@ const TV = () => (
   </svg>
 );
 
-const Palette = () => (
+const Rainbow = () => (
   <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M32 8 C18 8 8 18 8 30 C8 40 16 48 26 50 C28 50.5 30 49 30 47 C30 45 31 44 32 44 C44 44 56 36 56 24 C56 14.5 45 8 32 8Z"
-      fill="#f5e6d3" stroke="#d4a97a" strokeWidth="2"/>
-    <circle cx="20" cy="24" r="4" fill="#ff6b6b"/>
-    <circle cx="28" cy="16" r="4" fill="#ffd93d"/>
-    <circle cx="38" cy="16" r="4" fill="#6bcb77"/>
-    <circle cx="46" cy="24" r="4" fill="#4d96ff"/>
-    <circle cx="44" cy="34" r="4" fill="#ff6bce"/>
-    <circle cx="34" cy="40" r="3" fill="#9b59b6"/>
-    {/* thumb hole */}
-    <circle cx="42" cy="44" r="5" fill="white" stroke="#d4a97a" strokeWidth="2"/>
+    <path d="M8 48 A24 24 0 0 1 56 48" stroke="#ff6b6b" strokeWidth="5" strokeLinecap="round" fill="none"/>
+    <path d="M13 48 A19 19 0 0 1 51 48" stroke="#ffa500" strokeWidth="5" strokeLinecap="round" fill="none"/>
+    <path d="M18 48 A14 14 0 0 1 46 48" stroke="#ffd93d" strokeWidth="5" strokeLinecap="round" fill="none"/>
+    <path d="M23 48 A9 9 0 0 1 41 48" stroke="#6bcb77" strokeWidth="5" strokeLinecap="round" fill="none"/>
+    <path d="M28 48 A4 4 0 0 1 36 48" stroke="#4d96ff" strokeWidth="5" strokeLinecap="round" fill="none"/>
+  </svg>
+);
+
+const Dragon = () => (
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* flame */}
+    <path d="M32 6 C28 18 18 22 18 34 C18 42 24 50 32 50 C40 50 46 42 46 34 C46 22 36 18 32 6Z"
+      fill="#ff8c00" stroke="#ff4500" strokeWidth="2"/>
+    <path d="M32 16 C30 24 24 28 24 36 C24 42 28 46 32 46 C36 46 40 42 40 36 C40 28 34 24 32 16Z"
+      fill="#ffcc00"/>
+    <path d="M32 28 C30 32 28 34 28 38 C28 42 30 44 32 44 C34 44 36 42 36 38 C36 34 34 32 32 28Z"
+      fill="#fff5cc"/>
   </svg>
 );
 
@@ -87,7 +94,8 @@ const ICONS: Record<Species, React.FC> = {
   hypno: Spiral,
   icecream: IceCream,
   tv: TV,
-  paint: Palette,
+  rainbow: Rainbow,
+  dragon: Dragon,
 };
 
 interface TummyIconProps {
