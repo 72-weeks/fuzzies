@@ -97,7 +97,7 @@ export const FuzzyDisplay: React.FC = () => {
       y: hatStartRef.current.sy + dy,
     };
     if (activeHatRef.current) {
-      activeHatRef.current.style.transform = `translate(${hatPosRef.current.x}px, ${hatPosRef.current.y}px)`;
+      activeHatRef.current.style.transform = `translate(calc(-50% + ${hatPosRef.current.x}px), ${hatPosRef.current.y}px)`;
     }
   }, [hatDragging]);
 
@@ -111,7 +111,7 @@ export const FuzzyDisplay: React.FC = () => {
         setHatDetached(false);
         setHatOffset({ x: 0, y: 0 });
       }
-      if (activeHatRef.current) activeHatRef.current.style.transform = '';
+      if (activeHatRef.current) activeHatRef.current.style.transform = 'translateX(-50%)';
     } else {
       // Detach
       const currentHat = hatDetached ? detachedHatType : hat;
@@ -128,7 +128,7 @@ export const FuzzyDisplay: React.FC = () => {
   // Reset hat visual when reattached
   useEffect(() => {
     if (!hatDetached && attachedHatRef.current) {
-      attachedHatRef.current.style.transform = '';
+      attachedHatRef.current.style.transform = 'translateX(-50%)';
     }
   }, [hatDetached]);
 
@@ -260,7 +260,7 @@ export const FuzzyDisplay: React.FC = () => {
               zIndex: 3,
               cursor: hatDragging ? 'grabbing' : 'grab',
               touchAction: 'none',
-              transform: `translate(${hatOffset.x}px, ${hatOffset.y}px)`,
+              transform: `translate(calc(-50% + ${hatOffset.x}px), ${hatOffset.y}px)`,
             }}
           >
             <img
