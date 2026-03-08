@@ -10,7 +10,7 @@ const HAT_POSITIONS: Record<Exclude<Hat, 'none'>, { top: string; left: string; w
   helicopter: { top: '8%',  left: '53%', width: '30%' },
 };
 
-const SNAP_DISTANCE = 120;
+const SNAP_DISTANCE = 200;
 
 export const FuzzyDisplay: React.FC = () => {
   const active = useActiveFuzzy();
