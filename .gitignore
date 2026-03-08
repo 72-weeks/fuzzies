@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+fuzzy_assets/
+fuzzies_app_plan.md
+*.local
+.DS_Store
