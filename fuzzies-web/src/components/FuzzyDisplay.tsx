@@ -10,18 +10,13 @@ const HAT_POSITIONS: Record<Exclude<Hat, 'none'>, { top: string; left: string; w
   helicopter: { top: '8%',  left: '53%', width: '30%' },
 };
 
-const SNAP_DISTANCE = 200;
-
 export const FuzzyDisplay: React.FC = () => {
   const active = useActiveFuzzy();
-  const { setPosition, setHat, setHatDetached, setHatOffset, setDetachedHatType, closeMenu } = useFuzzyStore();
+  const { setPosition, closeMenu } = useFuzzyStore();
 
   const color = active?.color ?? 'blue';
   const species = active?.species ?? 'ice';
   const hat = active?.hat ?? 'none';
-  const hatDetached = active?.hatDetached ?? false;
-  const hatOffset = active?.hatOffset ?? { x: 0, y: 0 };
-  const detachedHatType = active?.detachedHatType ?? 'none';
 
   // ── Fuzzy drag ──
   const fuzzyRef = useRef<HTMLDivElement>(null);
@@ -37,8 +32,6 @@ export const FuzzyDisplay: React.FC = () => {
   }, [active?.id]);
 
   const onFuzzyDown = useCallback((e: React.PointerEvent) => {
-    // Don't capture if the hat handles it
-    if ((e.target as HTMLElement).closest('[data-hat-drag]')) return;
     closeMenu();
     fuzzyRef.current?.setPointerCapture(e.pointerId);
     fuzzyStartRef.current = {
@@ -66,74 +59,7 @@ export const FuzzyDisplay: React.FC = () => {
     setPosition(fuzzyPosRef.current);
   }, [setPosition]);
 
-  // ── Hat drag ──
-  const attachedHatRef = useRef<HTMLDivElement>(null);
-  const detachedHatRef = useRef<HTMLDivElement>(null);
-  const [hatDragging, setHatDragging] = useState(false);
-  const hatPosRef = useRef({ x: 0, y: 0 });
-  const hatStartRef = useRef({ px: 0, py: 0, sx: 0, sy: 0 });
-  const activeHatRef = useRef<HTMLDivElement | null>(null);
-
-  const onHatDown = useCallback((e: React.PointerEvent) => {
-    e.stopPropagation();
-    closeMenu();
-    const ref = hatDetached ? detachedHatRef : attachedHatRef;
-    activeHatRef.current = ref.current;
-    activeHatRef.current?.setPointerCapture(e.pointerId);
-    hatPosRef.current = hatDetached ? { ...hatOffset } : { x: 0, y: 0 };
-    hatStartRef.current = {
-      px: e.clientX, py: e.clientY,
-      sx: hatPosRef.current.x, sy: hatPosRef.current.y,
-    };
-    setHatDragging(true);
-  }, [hatDetached, hatOffset, closeMenu]);
-
-  const onHatMove = useCallback((e: React.PointerEvent) => {
-    if (!hatDragging) return;
-    const dx = e.clientX - hatStartRef.current.px;
-    const dy = e.clientY - hatStartRef.current.py;
-    hatPosRef.current = {
-      x: hatStartRef.current.sx + dx,
-      y: hatStartRef.current.sy + dy,
-    };
-    if (activeHatRef.current) {
-      activeHatRef.current.style.transform = `translate(calc(-50% + ${hatPosRef.current.x}px), ${hatPosRef.current.y}px)`;
-    }
-  }, [hatDragging]);
-
-  const onHatUp = useCallback(() => {
-    setHatDragging(false);
-    const dist = Math.sqrt(hatPosRef.current.x ** 2 + hatPosRef.current.y ** 2);
-    if (dist < SNAP_DISTANCE) {
-      // Snap back
-      if (hatDetached) {
-        setHat(detachedHatType);
-        setHatDetached(false);
-        setHatOffset({ x: 0, y: 0 });
-      }
-      if (activeHatRef.current) activeHatRef.current.style.transform = 'translateX(-50%)';
-    } else {
-      // Detach
-      const currentHat = hatDetached ? detachedHatType : hat;
-      if (currentHat !== 'none') {
-        setDetachedHatType(currentHat);
-        setHatDetached(true);
-        setHatOffset(hatPosRef.current);
-        if (!hatDetached) setHat('none');
-      }
-    }
-    activeHatRef.current = null;
-  }, [hat, hatDetached, detachedHatType, setHat, setHatDetached, setHatOffset, setDetachedHatType]);
-
-  // Reset hat visual when reattached
-  useEffect(() => {
-    if (!hatDetached && attachedHatRef.current) {
-      attachedHatRef.current.style.transform = 'translateX(-50%)';
-    }
-  }, [hatDetached]);
-
-  const renderHatType = hatDetached ? detachedHatType : hat;
-  const hatPos = renderHatType !== 'none' ? HAT_POSITIONS[renderHatType as Exclude<Hat, 'none'>] : null;
+  const hatPos = hat !== 'none' ? HAT_POSITIONS[hat] : null;
 
   return (
     <div
@@ -216,60 +142,23 @@ export const FuzzyDisplay: React.FC = () => {
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
 
-        {/* Layer 3: Hat (attached — draggable) */}
-        {hat !== 'none' && !hatDetached && hatPos && (
-          <div
-            ref={attachedHatRef}
-            data-hat-drag
-            onPointerDown={onHatDown}
-            onPointerMove={onHatMove}
-            onPointerUp={onHatUp}
+        {/* Layer 3: Hat (fixed position) */}
+        {hat !== 'none' && hatPos && (
+          <img
+            src={assetUrl(`hat-${hat}.png`)}
+            alt={`${hat} hat`}
             style={{
               position: 'absolute',
               top: hatPos.top,
               left: hatPos.left,
               transform: 'translateX(-50%)',
               width: hatPos.width,
+              objectFit: 'contain',
               zIndex: 3,
-              cursor: hatDragging ? 'grabbing' : 'grab',
-              touchAction: 'none',
+              pointerEvents: 'none',
             }}
-          >
-            <img
-              src={assetUrl(`hat-${hat}.png`)}
-              alt={`${hat} hat`}
-              style={{ width: '100%', objectFit: 'contain', pointerEvents: 'none' }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          </div>
-        )}
-
-        {/* Layer 3: Hat (detached — floating, draggable) */}
-        {hatDetached && detachedHatType !== 'none' && hatPos && (
-          <div
-            ref={detachedHatRef}
-            data-hat-drag
-            onPointerDown={onHatDown}
-            onPointerMove={onHatMove}
-            onPointerUp={onHatUp}
-            style={{
-              position: 'absolute',
-              top: hatPos.top,
-              left: hatPos.left,
-              width: hatPos.width,
-              zIndex: 3,
-              cursor: hatDragging ? 'grabbing' : 'grab',
-              touchAction: 'none',
-              transform: `translate(calc(-50% + ${hatOffset.x}px), ${hatOffset.y}px)`,
-            }}
-          >
-            <img
-              src={assetUrl(`hat-${detachedHatType}.png`)}
-              alt={`${detachedHatType} hat`}
-              style={{ width: '100%', objectFit: 'contain', pointerEvents: 'none' }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          </div>
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
         )}
       </div>
     </div>
