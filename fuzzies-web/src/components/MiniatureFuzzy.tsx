@@ -38,7 +38,7 @@ export const MiniatureFuzzy: React.FC<Props> = ({ fuzzy, size = 200, onClick }) 
             top: '20%',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '75%',
+            width: '56%',
             height: 'auto',
             objectFit: 'contain',
             zIndex: 0,

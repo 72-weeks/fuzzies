@@ -97,7 +97,7 @@ export const FuzzyDisplay: React.FC = () => {
               top: '20%',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '75%',
+              width: '56%',
               height: 'auto',
               objectFit: 'contain',
               zIndex: 0,
